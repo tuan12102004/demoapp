@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:intl/intl.dart';
 import '../service/database.dart';
 
 class Wallet extends StatefulWidget {
@@ -27,6 +28,7 @@ class _State extends State<Wallet> {
     QuerySnapshot querySnapshot = await DatabaseMethods().getUserWalletByEmail(
       email!,
     );
+    walletStream = await DatabaseMethods().getUserTransactions(id!);
     wallet = "${querySnapshot.docs[0]["wallet"]}";
     print(wallet);
     setState(() {});
@@ -50,7 +52,66 @@ class _State extends State<Wallet> {
       }
     });
   }
-
+  Stream? walletStream;
+  Widget allOrders() {
+    return StreamBuilder(
+      stream: walletStream,
+      builder: (context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          print("📦 Tổng số đơn hàng: ${snapshot.data.docs.length}");
+          return ListView.builder(
+            itemCount: snapshot.data.docs.length,
+            physics: BouncingScrollPhysics(),
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              DocumentSnapshot ds = snapshot.data.docs[index];
+              print("🔥 Order: ${ds.data()}");
+              return Align(
+                alignment: Alignment.topCenter,
+                child:  Container(
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.only(left: 20,right: 20,bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFececf8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10.0,top: 10,bottom: 10),
+                    child: Row(
+                      children: [
+                        Column(
+                          children: [
+                            Text(ds["Date"],style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 25,
+                            ),),
+                          ],
+                        ),
+                        SizedBox(width: 15,),
+                        Column(
+                          children: [
+                            Text("Account added to wallet"),
+                            Text("\$"+ds["Amount"],style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 25,
+                                color: Colors.red
+                            ),),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else {
+          return Center(child: Text("Không có đơn hàng nào."));
+        }
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -269,6 +330,37 @@ class _State extends State<Wallet> {
                             ),
                           ),
                         ),
+                        Positioned(
+                          bottom: 0,
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.43,
+                            width: MediaQuery.of(context).size.width,
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // ✅ Thêm padding
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(20),
+                                topLeft: Radius.circular(20),
+                              ),
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Your Transactions",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                    fontSize: 22,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: allOrders(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -309,6 +401,13 @@ class _State extends State<Wallet> {
             setState(() {
 
             });
+            DateTime now = DateTime.now();
+            String formattedDate = DateFormat("dd MMM").format(now);
+            Map<String,dynamic> userTransactions = {
+              "Amount" : amount,
+              "Date" : formattedDate,
+            };
+            await DatabaseMethods().addUserTransactions(userTransactions,id!);
             showDialog(
               context: context,
               builder: (context) {
@@ -416,7 +515,7 @@ class _State extends State<Wallet> {
           ),
           content: SingleChildScrollView(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Add money"),

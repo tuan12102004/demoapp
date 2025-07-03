@@ -159,6 +159,19 @@ class _HomeState extends State<Home> {
                        child: Center(child: Text(state.messenger),),
                      );
                    }
+                   if (state.search.isNotEmpty) {
+                     return ListView.builder(
+                       itemCount: state.search.length,
+                       shrinkWrap: true, // để fit theo content
+                       physics: NeverScrollableScrollPhysics(), // tránh xung đột với SingleChildScrollView
+                       scrollDirection: Axis.vertical,
+                       itemBuilder: (context, index) {
+                         return ListTile(
+                           title: Text(state.search[index].breadName),
+                         );
+                       },
+                     );
+                   }
                    return SizedBox(
                      height: size.height * 0.9,
                      child: GridView.builder(

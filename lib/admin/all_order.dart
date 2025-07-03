@@ -189,14 +189,19 @@ class _AllOrderState extends State<AllOrder> {
                 padding: const EdgeInsets.only(left: 10.0,top: 10),
                 child: Row(
                   children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.red,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.red,
+                        ),
+                        child: Icon(Icons.arrow_back,color: Colors.white,),
                       ),
-                      child: Icon(Icons.arrow_back,color: Colors.white,),
                     ),
                     SizedBox(width: 80,),
                     Text("All Orders",style: TextStyle(

@@ -20,7 +20,6 @@ class DatabaseMethods {
         .doc(orderId)
         .set(userOrderMap);
   }
-
   Future addAdminOrderDetail(
       Map<String, dynamic> userOrderMap,
       String orderId,
@@ -50,6 +49,7 @@ class DatabaseMethods {
   Future<Stream<QuerySnapshot>> getAdminOrders() async {
     return await FirebaseFirestore.instance
         .collection("Orders")
+        .where("Status", isEqualTo: "Pending")
         .snapshots();
   }
   Future updateAdminOrders(String id) async {
@@ -65,5 +65,33 @@ class DatabaseMethods {
         .collection("Orders")
         .doc(docId)
         .update({"Status" : "Delivered"});
+  }
+  Future<Stream<QuerySnapshot>> getAllUsers() async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .snapshots();
+  }
+  Future deleteUser(String id) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .delete();
+  }
+  Future addUserTransactions(
+      Map<String, dynamic> userOrderMap,
+      String id,
+      ) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .collection("Transaction")
+        .add(userOrderMap);
+  }
+  Future<Stream<QuerySnapshot>> getUserTransactions(String id) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .collection("Transaction")
+        .snapshots();
   }
 }

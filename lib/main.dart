@@ -13,6 +13,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 import 'admin/all_order.dart';
+import 'admin/home_admin.dart';
+import 'admin/manage_users.dart';
 import 'bloc/search/search_bloc.dart';
 
 void main () async {
